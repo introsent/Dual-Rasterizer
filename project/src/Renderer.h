@@ -3,6 +3,7 @@
 #include "Mesh3D.h"
 #include "Camera.h"
 #include "FireEffect.h"
+#include "DataTypes.h"
 
 struct SDL_Window;
 struct SDL_Surface;
@@ -23,22 +24,10 @@ namespace dae
 		void Update(const Timer* pTimer);
 		void CleanupDirectX();
 		void Render() const;
-
-		void RenderCPU() const;
 		void RenderGPU() const;
+		void RenderCPU() const;
 
-		enum FilteringTechnique
-		{
-			Point,
-			Linear,
-			Anisotropic
-		};
-
-		enum RenderingBackendType
-		{
-			Software,
-			Hardware
-		};
+		void ChangeShadingMode();
 		void ChangeFilteringTechnique();
 		void ChangeRenderingBackendType();
 
@@ -80,6 +69,9 @@ namespace dae
 		std::unique_ptr<Camera> m_pCamera;
 		FilteringTechnique m_FilteringTechnique{ FilteringTechnique::Anisotropic };
 		RenderingBackendType m_RenderingBackendType{ RenderingBackendType::Hardware };
+		ShadingMode m_CurrentShadingMode{ ShadingMode::Combined };
+		DisplayMode m_CurrentDisplayMode{ DisplayMode::ShadingMode };
+		bool m_IsNormalMap{ true };
 
 		std::unique_ptr<VehicleEffect> m_pVehicleEffect;
 		std::unique_ptr<FireEffect> m_pFireEffect;

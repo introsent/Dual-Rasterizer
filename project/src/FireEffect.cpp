@@ -61,11 +61,10 @@ FireEffect::FireEffect(ID3D11Device* pDevice, const std::wstring& assetFile) : E
 		m_EffectSamplerVariable->SetSampler(0, m_pSamplerAnisotropic);
 	}
 
-
-	std::unique_ptr<Texture> pDiffuseTexture = Texture::LoadFromFile(pDevice, "resources/fireFX_diffuse.png");
-	m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
-	if (m_pDiffuseMapVariable->IsValid()) {
-		m_pDiffuseMapVariable->SetResource(pDiffuseTexture.get()->GetShaderResourceView());
+	m_pUDiffuseTexture = Texture::LoadFromFile(pDevice, "resources/fireFX_diffuse.png");
+	ID3DX11EffectShaderResourceVariable*  pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
+	if (pDiffuseMapVariable->IsValid()) {
+		pDiffuseMapVariable->SetResource(m_pUDiffuseTexture.get()->GetShaderResourceView());
 	}
 	else
 	{
@@ -75,13 +74,6 @@ FireEffect::FireEffect(ID3D11Device* pDevice, const std::wstring& assetFile) : E
 
 FireEffect::~FireEffect()
 {
-	//Release maps
-	if (m_pDiffuseMapVariable)
-	{
-		m_pDiffuseMapVariable->Release();
-		m_pDiffuseMapVariable = nullptr;
-	}
-
 	//Release samplers
 	if (m_pSamplerAnisotropic)
 	{
@@ -133,4 +125,9 @@ void FireEffect::SetAnisotropicSampling()
 	{
 		printf("Sampler state set to Anisotropic.\n");
 	}
+}
+
+Texture* FireEffect::GetDiffuseTexture()
+{
+	return  m_pUDiffuseTexture.get();
 }

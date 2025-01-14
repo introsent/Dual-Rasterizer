@@ -27,6 +27,34 @@ namespace dae
 		TriangleStrip
 	};
 
+	enum class DisplayMode {
+		FinalColor,
+		DepthBuffer,
+		ShadingMode
+	};
+
+	enum class ShadingMode
+	{
+		ObservedArea,
+		Diffuse,
+		Specular,
+		Combined
+	};
+
+	enum FilteringTechnique
+	{
+		Point,
+		Linear,
+		Anisotropic
+	};
+
+	enum RenderingBackendType
+	{
+		Software,
+		Hardware
+	};
+
+
 	struct Mesh
 	{
 		std::vector<Vertex> vertices{};
@@ -34,6 +62,5 @@ namespace dae
 		PrimitiveTopology primitiveTopology{ PrimitiveTopology::TriangleStrip };
 
 		std::vector<Vertex_Out> vertices_out{};
-		Matrix worldMatrix{};
-	};
+		Matrix worldMatrix{};	};
 }

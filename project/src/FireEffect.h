@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "Effect.h"
+#include "Texture.h"
 class FireEffect final : public Effect
 {
 public:
@@ -16,11 +17,13 @@ public:
     void SetLinearSampling();
     void SetAnisotropicSampling();
 
+    Texture* GetDiffuseTexture() override;
+
 protected:
     ID3D11SamplerState* m_pSamplerPoint{};
     ID3D11SamplerState* m_pSamplerLinear{};
     ID3D11SamplerState* m_pSamplerAnisotropic{};
     ID3DX11EffectSamplerVariable* m_EffectSamplerVariable{};
 
-    ID3DX11EffectShaderResourceVariable* m_pDiffuseMapVariable{};
+    std::unique_ptr<Texture> m_pUDiffuseTexture;
 };

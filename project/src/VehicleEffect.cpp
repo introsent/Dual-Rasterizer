@@ -78,32 +78,32 @@ VehicleEffect::VehicleEffect(ID3D11Device* pDevice, const std::wstring& assetFil
 	}
 
 
-	std::unique_ptr<Texture> pDiffuseTexture = Texture::LoadFromFile(pDevice, "resources/vehicle_diffuse.png");
-	m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
-	if (m_pDiffuseMapVariable->IsValid()) {
-		m_pDiffuseMapVariable->SetResource(pDiffuseTexture.get()->GetShaderResourceView());
+	m_pUDiffuseTexture = Texture::LoadFromFile(pDevice, "resources/vehicle_diffuse.png");
+	ID3DX11EffectShaderResourceVariable* pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
+	if (pDiffuseMapVariable->IsValid()) {
+		pDiffuseMapVariable->SetResource(m_pUDiffuseTexture.get()->GetShaderResourceView());
 	}
 	else
 	{
 		std::wcout << L"m_pDiffuseMapVariable not valid!\n";
 	}
 
-	std::unique_ptr<Texture> pNormalTexture = Texture::LoadFromFile(pDevice, "resources/vehicle_normal.png");
-	m_pNormalMapVariable = m_pEffect->GetVariableByName("gNormalMap")->AsShaderResource();
-	if (m_pNormalMapVariable->IsValid())
+	m_pUNormalTexture = Texture::LoadFromFile(pDevice, "resources/vehicle_normal.png");
+	ID3DX11EffectShaderResourceVariable*  pNormalMapVariable = m_pEffect->GetVariableByName("gNormalMap")->AsShaderResource();
+	if (pNormalMapVariable->IsValid())
 	{
-		m_pNormalMapVariable->SetResource(pNormalTexture.get()->GetShaderResourceView());
+		pNormalMapVariable->SetResource(m_pUNormalTexture.get()->GetShaderResourceView());
 	}
 	else
 	{
 		std::wcout << L"m_pNormalMapVariable not valid!\n";
 	}
 
-	std::unique_ptr<Texture> pSpecularTexture = Texture::LoadFromFile(pDevice, "resources/vehicle_specular.png");
-	m_pSpecularMapVariable = m_pEffect->GetVariableByName("gSpecularMap")->AsShaderResource();
-	if (m_pSpecularMapVariable->IsValid())
+	m_pUSpecularTexture = Texture::LoadFromFile(pDevice, "resources/vehicle_specular.png");
+	ID3DX11EffectShaderResourceVariable*  pSpecularMapVariable = m_pEffect->GetVariableByName("gSpecularMap")->AsShaderResource();
+	if (pSpecularMapVariable->IsValid())
 	{
-		m_pSpecularMapVariable->SetResource(pSpecularTexture.get()->GetShaderResourceView());
+		pSpecularMapVariable->SetResource(m_pUSpecularTexture.get()->GetShaderResourceView());
 		
 	}
 	else
@@ -111,12 +111,11 @@ VehicleEffect::VehicleEffect(ID3D11Device* pDevice, const std::wstring& assetFil
 		std::wcout << L"m_pSpecularMapVariable not valid!\n";
 	}
 
-
-	std::unique_ptr<Texture> pGlossinessTexture = Texture::LoadFromFile(pDevice, "resources/vehicle_gloss.png");
-	m_pGlossinessMapVariable = m_pEffect->GetVariableByName("gGlossinessMap")->AsShaderResource();
-	if (m_pGlossinessMapVariable->IsValid())
+	m_pUGlossinessTexture = Texture::LoadFromFile(pDevice, "resources/vehicle_gloss.png");
+	ID3DX11EffectShaderResourceVariable* pGlossinessMapVariable = m_pEffect->GetVariableByName("gGlossinessMap")->AsShaderResource();
+	if (pGlossinessMapVariable->IsValid())
 	{
-		m_pGlossinessMapVariable->SetResource(pGlossinessTexture.get()->GetShaderResourceView());
+		pGlossinessMapVariable->SetResource(m_pUGlossinessTexture.get()->GetShaderResourceView());
 	}
 	else
 	{
@@ -139,31 +138,6 @@ VehicleEffect::~VehicleEffect()
 	{
 		m_pMatWorldVariable->Release();
 		m_pMatWorldVariable = nullptr;
-	}
-
-	//Release maps
-	if (m_pGlossinessMapVariable)
-	{
-		m_pGlossinessMapVariable->Release();
-		m_pGlossinessMapVariable = nullptr;
-	}
-
-	if (m_pSpecularMapVariable)
-	{
-		m_pSpecularMapVariable->Release();
-		m_pSpecularMapVariable = nullptr;
-	}
-
-	if (m_pNormalMapVariable)
-	{
-		m_pNormalMapVariable->Release();
-		m_pNormalMapVariable = nullptr;
-	}
-
-	if (m_pDiffuseMapVariable)
-	{
-		m_pDiffuseMapVariable->Release();
-		m_pDiffuseMapVariable = nullptr;
 	}
 
 	//Release samplers
@@ -217,6 +191,26 @@ void VehicleEffect::SetAnisotropicSampling()
 	{
 		printf("Sampler state set to Anisotropic.\n");
 	}
+}
+
+Texture* VehicleEffect::GetDiffuseTexture()
+{
+	return  m_pUDiffuseTexture.get();
+}
+
+Texture* VehicleEffect::GetNormalTexture()
+{
+	return  m_pUNormalTexture.get();
+}
+
+Texture* VehicleEffect::GetSpecularTexture()
+{
+	return m_pUSpecularTexture.get();
+}
+
+Texture* VehicleEffect::GetGlossinessTexture()
+{
+	return m_pUGlossinessTexture.get();
 }
 
 void VehicleEffect::Update(const Vector3& cameraPosition, const Matrix& pWorldMatrix, const Matrix& pWorldViewProjectionMatrix)

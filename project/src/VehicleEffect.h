@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "Effect.h"
+#include "Texture.h"
 class VehicleEffect final : public Effect
 {
 public:
@@ -16,6 +17,11 @@ public:
 	void SetLinearSampling();
     void SetAnisotropicSampling();
 
+    Texture* GetDiffuseTexture() override;
+    Texture* GetNormalTexture() override;
+    Texture* GetSpecularTexture() override;
+    Texture* GetGlossinessTexture() override;
+
     void Update(const Vector3& cameraPosition, const Matrix& pWorldMatrix, const Matrix& pWorldViewProjectionMatrix) override;
 
 protected:
@@ -27,8 +33,9 @@ protected:
     ID3D11SamplerState* m_pSamplerAnisotropic{};
     ID3DX11EffectSamplerVariable* m_EffectSamplerVariable{};
 
-    ID3DX11EffectShaderResourceVariable* m_pDiffuseMapVariable{};
-    ID3DX11EffectShaderResourceVariable* m_pNormalMapVariable{};
-    ID3DX11EffectShaderResourceVariable* m_pSpecularMapVariable{};
-    ID3DX11EffectShaderResourceVariable* m_pGlossinessMapVariable{};
+    std::unique_ptr<Texture> m_pUDiffuseTexture;
+    std::unique_ptr<Texture> m_pUNormalTexture;
+    std::unique_ptr<Texture> m_pUSpecularTexture;
+    std::unique_ptr<Texture> m_pUGlossinessTexture;
+
 };

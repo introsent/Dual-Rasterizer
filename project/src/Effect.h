@@ -22,6 +22,24 @@ public:
 
     virtual void Update(const Vector3& cameraPosition, const Matrix& pWorldMatrix, const Matrix& pWorldViewProjectionMatrix);
 
+
+    virtual Texture* GetDiffuseTexture() 
+    {
+        return nullptr;
+    }
+    virtual Texture* GetNormalTexture()
+    {
+        return nullptr;
+    }
+    virtual Texture* GetSpecularTexture()
+    {
+        return nullptr;
+    }
+    virtual Texture* GetGlossinessTexture()
+    {
+        return nullptr;
+    }
+
 protected:
     ID3DX11Effect* m_pEffect;
     ID3DX11EffectTechnique* m_pTechnique;

@@ -33,6 +33,17 @@ namespace dae
 		float& operator[](int index);
 		float operator[](int index) const;
 
+		static Vector2 Interpolate(const Vector2& v0, const Vector2& v1, const Vector2& v2, const float w0, const float w1, const float w2,
+			const float interpolationScale0, const float interpolationScale1, const float interpolationScale2,
+			const float interpolatedDepth, const float wProduct)
+		{
+			return (v0 * w1 * w2 * interpolationScale0 +
+				v1 * w0 * w2 * interpolationScale1 +
+				v2 * w0 * w1 * interpolationScale2) *
+				interpolatedDepth / wProduct;
+		}
+
+
 		static const Vector2 UnitX;
 		static const Vector2 UnitY;
 		static const Vector2 Zero;

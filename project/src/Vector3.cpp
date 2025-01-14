@@ -74,6 +74,16 @@ namespace dae {
 		return v1 - (2.f * Vector3::Dot(v1, v2) * v2);
 	}
 
+	Vector3 Vector3::Interpolate(const Vector3& v0, const Vector3& v1, const Vector3& v2, const float w0, const float w1, const float w2,
+		const float interpolationScale0, const float interpolationScale1, const float interpolationScale2,
+		const float interpolatedDepth, const float wProduct)
+	{
+		return (v0 * w1 * w2 * interpolationScale0 +
+			v1 * w0 * w2 * interpolationScale1 +
+			v2 * w0 * w1 * interpolationScale2) *
+			interpolatedDepth / wProduct;
+	}
+
 	Vector4 Vector3::ToPoint4() const
 	{
 		return { x, y, z, 1 };

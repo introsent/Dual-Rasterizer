@@ -25,6 +25,9 @@ namespace dae
 		static Vector3 Project(const Vector3& v1, const Vector3& v2);
 		static Vector3 Reject(const Vector3& v1, const Vector3& v2);
 		static Vector3 Reflect(const Vector3& v1, const Vector3& v2);
+		static Vector3 Interpolate(const Vector3& v0, const Vector3& v1, const Vector3& v2, const float w0, const float w1, const float w2,
+			const float interpolationScale0, const float interpolationScale1, const float interpolationScale2,
+			const float interpolatedDepth, const float wProduct);
 
 		Vector4 ToPoint4() const;
 		Vector4 ToVector4() const;
