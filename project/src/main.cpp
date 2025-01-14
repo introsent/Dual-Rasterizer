@@ -70,6 +70,10 @@ int main(int argc, char* args[])
 				break;
 			case SDL_KEYUP:
 				//Test for a key
+				if (e.key.keysym.scancode == SDL_SCANCODE_F1)
+				{
+					pRenderer->ChangeRenderingBackendType();
+				}
 				if (e.key.keysym.scancode == SDL_SCANCODE_F2)
 				{
 					pRenderer->ChangeFilteringTechnique();

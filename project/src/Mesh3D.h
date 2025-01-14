@@ -5,15 +5,8 @@
 #include <vector>
 #include "Effect.h"
 #include "VehicleEffect.h"
+#include "DataTypes.h"
 using namespace dae;
-
-struct Vertex
-{
-	Vector3 position;
-	Vector2 uv;
-	Vector3 normal; 
-	Vector3 tangent; 
-};
 
 class Mesh3D final
 {
