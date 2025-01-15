@@ -156,11 +156,19 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 		// Skip if any vertex is behind the camera (w < 0)
 		if (v0.w < 0 || v1.w < 0 || v2.w < 0) continue;
 
-		if ((v0.x < -1 || v0.x > 1) || (v1.x < -1 || v1.x > 1) || (v2.x < -1 || v2.x > 1)
-			|| ((v0.y < -1 || v0.y > 1) || (v1.y < -1 || v1.y > 1) || (v2.y < -1 || v2.y > 1))
-			|| ((v0.z < 0 || v0.z > 1) || (v1.z < 0 || v1.z > 1) || (v2.z < 0 || v2.z > 1))) continue;
+		if (!CheckClipping(v0, v1, v2))
+		{
+			continue; // All vertices are outside the clip space, skip rendering
+		}
 
+		v0.x = v0.x * 0.5f + 0.5f;
+		v0.y = (1.0f - v0.y) * 0.5f;
 
+		v1.x = v1.x * 0.5f + 0.5f;
+		v1.y = (1.0f - v1.y) * 0.5f;
+
+		v2.x = v2.x * 0.5f + 0.5f;
+		v2.y = (1.0f - v2.y) * 0.5f;
 
 		// Backface culling (skip if the triangle is facing away from the camera)
 		//if (cullingMode == CullingMode::Back)
@@ -178,7 +186,6 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 		//	if (Vector3::Dot(normal.Normalized(), camera.forward) > 0.f) continue;
 		//}
 
-
 		// Transform coordinates to screen space
 		v0.x *= width;
 		v1.x *= width;
@@ -187,13 +194,11 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 		v1.y *= height;
 		v2.y *= height;
 
-
 		// Compute bounding box of the triangle
 		int minX = std::max(0, static_cast<int>(std::floor(std::min({ v0.x, v1.x, v2.x }))));
 		int maxX = std::min(width, static_cast<int>(std::ceil(std::max({ v0.x, v1.x, v2.x }))));
 		int minY = std::max(0, static_cast<int>(std::floor(std::min({ v0.y, v1.y, v2.y }))));
 		int maxY = std::min(height, static_cast<int>(std::ceil(std::max({ v0.y, v1.y, v2.y }))));
-
 
 		if (displayMode == DisplayMode::BoundingBox)
 		{
@@ -252,11 +257,11 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 					}
 
 					
-					float reciprocalTotalArea = 1.0f / totalArea;
+					//float reciprocalTotalArea = 1.0f / totalArea;
 
-					float interpolationScale0 = weightP0 * reciprocalTotalArea;
-					float interpolationScale1 = weightP1 * reciprocalTotalArea;
-					float interpolationScale2 = weightP2 * reciprocalTotalArea;
+					float interpolationScale0 = weightP0;
+					float interpolationScale1 = weightP1;
+					float interpolationScale2 = weightP2;
 
 					// Compute z-buffer value for depth testing
 					float zBufferValue = 1.f / (1.f / v0.z * interpolationScale0 +
@@ -369,9 +374,6 @@ void Mesh3D::VertexTransformationFunction(const Camera& camera, const Matrix& ro
 		Vector4 viewSpacePosition = overallMatrix.TransformPoint(m_pUMesh->vertices[i].position.ToVector4());
 		Vector4 projectionSpacePosition = viewSpacePosition / viewSpacePosition.w;
 
-		projectionSpacePosition.x = projectionSpacePosition.x * 0.5f + 0.5f;
-		projectionSpacePosition.y = (1.0f - projectionSpacePosition.y) * 0.5f;
-
 		m_pUMesh->vertices_out[i].position = projectionSpacePosition;
 		m_pUMesh->vertices_out[i].uv = m_pUMesh->vertices[i].uv;
 	}
@@ -428,4 +430,13 @@ ColorRGB Mesh3D::PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNor
 	}
 
 	return finalColor;
+}
+
+bool Mesh3D::CheckClipping(const Vector4& v0, const Vector4& v1, const Vector4& v2) const
+{
+	if ((v0.x < -1 || v0.x > 1 || v0.y < -1 || v0.y > 1 || v0.z < 0 || v0.z > 1) ||
+		(v1.x < -1 || v1.x > 1 || v1.y < -1 || v1.y > 1 || v1.z < 0 || v1.z > 1) ||
+		(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z < 0 || v2.z > 1) ) return false;
+
+	return true;
 }
