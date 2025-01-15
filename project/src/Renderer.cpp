@@ -50,10 +50,16 @@ namespace dae {
 	void Renderer::Update(const Timer* pTimer)
 	{
 		m_pCamera.get()->Update(pTimer);
-		m_WorldMatrix = Matrix::CreateRotationY(pTimer->GetTotal() * PI / 2);
+
+		if (m_IsRotating)
+		{
+			m_WorldMatrix = Matrix(Matrix::CreateRotationY(pTimer->GetElapsed() * PI / 2) * m_WorldMatrix);
+		}
+		
 
 		// Apply transformations
-		m_pVehicle->VertexTransformationFunction(*m_pCamera.get(), m_WorldMatrix);
+		if (m_RenderingBackendType == RenderingBackendType::Software)
+			m_pVehicle->VertexTransformationFunction(*m_pCamera.get(), m_WorldMatrix);
 	}
 
 	void Renderer::RenderGPU() const
@@ -121,6 +127,16 @@ namespace dae {
 		}
 	}
 
+	void Renderer::SetDisplayMode(DisplayMode displayMode)
+	{
+		m_CurrentDisplayMode = displayMode;
+	}
+
+	DisplayMode Renderer::GetDisplayMode() const
+	{
+		return m_CurrentDisplayMode;
+	}
+
 	void Renderer::ChangeFilteringTechnique()
 	{
 		switch (m_FilteringTechnique)
@@ -151,6 +167,21 @@ namespace dae {
 			m_RenderingBackendType = RenderingBackendType::Software;
 			break;
 		}
+	}
+
+	void Renderer::ChangeIsRotating()
+	{
+		m_IsRotating = !m_IsRotating;
+	}
+
+	void Renderer::ChangeToRenderFireMesh()
+	{
+		m_ToRenderFireMesh = !m_ToRenderFireMesh;
+	}
+
+	void Renderer::ChangeIsNormalMap()
+	{
+		m_IsNormalMap = !m_IsNormalMap; 
 	}
 
 	void Renderer::OnDeviceLost()

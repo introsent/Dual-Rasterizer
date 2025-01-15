@@ -28,9 +28,13 @@ namespace dae
 		void RenderCPU() const;
 
 		void ChangeShadingMode();
+		void SetDisplayMode(DisplayMode displayMode);
+		DisplayMode GetDisplayMode() const;
 		void ChangeFilteringTechnique();
 		void ChangeRenderingBackendType();
-
+		void ChangeIsRotating();
+		void ChangeToRenderFireMesh();
+		void ChangeIsNormalMap();
 	private:
 		SDL_Window* m_pWindow{};
 
@@ -72,6 +76,10 @@ namespace dae
 		ShadingMode m_CurrentShadingMode{ ShadingMode::Combined };
 		DisplayMode m_CurrentDisplayMode{ DisplayMode::ShadingMode };
 		bool m_IsNormalMap{ true };
+		bool m_IsRotating{ true };
+		bool m_ToRenderFireMesh{ true };
+
+
 
 		std::unique_ptr<VehicleEffect> m_pVehicleEffect;
 		std::unique_ptr<FireEffect> m_pFireEffect;

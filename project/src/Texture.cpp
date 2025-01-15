@@ -61,9 +61,7 @@ namespace dae
 			SDL_FreeSurface(m_pSurface);
 			m_pSurface = nullptr;
 		}
-		
 	}
-
 
 	std::unique_ptr<Texture> Texture::LoadFromFile(ID3D11Device* pDevice, const std::string& textureFile)
 	{
