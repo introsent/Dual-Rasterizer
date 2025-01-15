@@ -74,7 +74,8 @@ namespace dae {
 
 		//2. Set pipeline + invoke draw calls (= RENDER)
 		m_pVehicle.get()->RenderGPU(m_pCamera->origin, m_WorldMatrix, m_WorldMatrix * m_pCamera->GetViewMatrix() * m_pCamera->GetProjectionMatrix(), m_pDeviceContext);
-		m_pFire.get()->RenderGPU(m_pCamera->origin, m_WorldMatrix, m_WorldMatrix * m_pCamera->GetViewMatrix() * m_pCamera->GetProjectionMatrix(), m_pDeviceContext);
+		if (m_ToRenderFireMesh)
+			m_pFire.get()->RenderGPU(m_pCamera->origin, m_WorldMatrix, m_WorldMatrix * m_pCamera->GetViewMatrix() * m_pCamera->GetProjectionMatrix(), m_pDeviceContext);
 
 		//3. Present backbuffer (SWAP)
 		m_pSwapChain->Present(0, 0);

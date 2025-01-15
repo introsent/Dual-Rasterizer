@@ -80,7 +80,23 @@ int main(int argc, char* args[])
 				}
 				if (e.key.keysym.scancode == SDL_SCANCODE_F3)
 				{
+					pRenderer->ChangeToRenderFireMesh();
+				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F4)
+				{
 					pRenderer->ChangeFilteringTechnique();
+				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F5)
+				{
+					pRenderer->ChangeShadingMode();
+				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F6)
+				{
+					pRenderer->ChangeIsNormalMap();
+				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F7)
+				{
+					//pRenderer->Change
 				}
 				break;
 			default: ;
