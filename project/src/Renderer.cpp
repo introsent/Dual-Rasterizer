@@ -57,7 +57,7 @@ namespace dae {
 
 		if (m_IsRotating)
 		{
-			m_WorldMatrix = Matrix(Matrix::CreateRotationY(pTimer->GetElapsed() * PI / 2) * m_WorldMatrix);
+			m_WorldMatrix = Matrix(Matrix::CreateRotationY(pTimer->GetElapsed() * PI / 4) * m_WorldMatrix);
 		}
 		
 
