@@ -175,116 +175,128 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 		v1.y *= height;
 		v2.y *= height;
 
+
 		// Compute bounding box of the triangle
 		int minX = std::max(0, static_cast<int>(std::floor(std::min({ v0.x, v1.x, v2.x }))));
 		int maxX = std::min(width, static_cast<int>(std::ceil(std::max({ v0.x, v1.x, v2.x }))));
 		int minY = std::max(0, static_cast<int>(std::floor(std::min({ v0.y, v1.y, v2.y }))));
 		int maxY = std::min(height, static_cast<int>(std::ceil(std::max({ v0.y, v1.y, v2.y }))));
 
-		// Edge vectors for barycentric coordinates
-		auto e0 = v2 - v1;
-		auto e1 = v0 - v2;
-		auto e2 = v1 - v0;
 
-		Vector2 edge0_2D(e0.x, e0.y);
-		Vector2 edge1_2D(e1.x, e1.y);
-		Vector2 edge2_2D(e2.x, e2.y);
+		if (displayMode == DisplayMode::BoundingBox)
+		{
+			Uint32 color = SDL_MapRGB(pBackBuffer->format, 255, 255, 255);
+			SDL_Rect rect;
+			rect.x = minX;
+			rect.y = minY;
+			rect.w = maxX - minX;
+			rect.h = maxY - minY;
+			SDL_FillRect(pBackBuffer, &rect, color);
+		}
+		else
+		{
+			// Edge vectors for barycentric coordinates
+			auto e0 = v2 - v1;
+			auto e1 = v0 - v2;
+			auto e2 = v1 - v0;
 
-		float wProduct = v0.w * v1.w * v2.w;
+			Vector2 edge0_2D(e0.x, e0.y);
+			Vector2 edge1_2D(e1.x, e1.y);
+			Vector2 edge2_2D(e2.x, e2.y);
+
+			float wProduct = v0.w * v1.w * v2.w;
 
 
 
-		// Parallelize over rows of pixels (py)
+			// Parallelize over rows of pixels (py)
 #pragma omp parallel for
-		for (int py = minY; py < maxY; ++py) {
-			for (int px = minX; px < maxX; ++px) {
-				ColorRGB finalColor;
-				auto P = Vector2(px + 0.5f, py + 0.5f);
+			for (int py = minY; py < maxY; ++py) {
+				for (int px = minX; px < maxX; ++px) {
+					ColorRGB finalColor;
+					auto P = Vector2(px + 0.5f, py + 0.5f);
 
-				auto p0 = P - Vector2(v1.x, v1.y);
-				auto p1 = P - Vector2(v2.x, v2.y);
-				auto p2 = P - Vector2(v0.x, v0.y);
+					auto p0 = P - Vector2(v1.x, v1.y);
+					auto p1 = P - Vector2(v2.x, v2.y);
+					auto p2 = P - Vector2(v0.x, v0.y);
 
-				auto weightP0 = Vector2::Cross(edge0_2D, p0);
-				auto weightP1 = Vector2::Cross(edge1_2D, p1);
-				auto weightP2 = Vector2::Cross(edge2_2D, p2);
+					auto weightP0 = Vector2::Cross(edge0_2D, p0);
+					auto weightP1 = Vector2::Cross(edge1_2D, p1);
+					auto weightP2 = Vector2::Cross(edge2_2D, p2);
 
-				if (weightP0 < 0 || weightP1 < 0 || weightP2 < 0) continue;
+					if (weightP0 < 0 || weightP1 < 0 || weightP2 < 0) continue;
 
-				auto totalArea = weightP0 + weightP1 + weightP2;
-				float reciprocalTotalArea = 1.0f / totalArea;
+					auto totalArea = weightP0 + weightP1 + weightP2;
+					float reciprocalTotalArea = 1.0f / totalArea;
 
-				float interpolationScale0 = weightP0 * reciprocalTotalArea;
-				float interpolationScale1 = weightP1 * reciprocalTotalArea;
-				float interpolationScale2 = weightP2 * reciprocalTotalArea;
+					float interpolationScale0 = weightP0 * reciprocalTotalArea;
+					float interpolationScale1 = weightP1 * reciprocalTotalArea;
+					float interpolationScale2 = weightP2 * reciprocalTotalArea;
 
-				// Compute z-buffer value for depth testing
-				float zBufferValue = 1.f / (1.f / v0.z * interpolationScale0 +
-					1.f / v1.z * interpolationScale1 +
-					1.f / v2.z * interpolationScale2);
+					// Compute z-buffer value for depth testing
+					float zBufferValue = 1.f / (1.f / v0.z * interpolationScale0 +
+						1.f / v1.z * interpolationScale1 +
+						1.f / v2.z * interpolationScale2);
 
-				if (zBufferValue < 0 || zBufferValue > 1) continue;
-
-
-
-				int pixelIndex = px + (py * width);
-				if (zBufferValue >= pDepthBufferPixels[pixelIndex]) continue;
-
-				pDepthBufferPixels[pixelIndex] = zBufferValue;
-
-				// Interpolated depth for final color calculation
-				float interpolatedDepth = wProduct / (v1.w * v2.w * interpolationScale0 +
-					v0.w * v2.w * interpolationScale1 +
-					v0.w * v1.w * interpolationScale2);
-				if (interpolatedDepth <= 0) continue;
-
-				// Texture sampling
-				Vertex_Out pixelVertex;
-
-				pixelVertex.position = (m_pUMesh->vertices[t0].position.ToPoint4() + m_pUMesh->vertices[t1].position.ToPoint4() + m_pUMesh->vertices[t2].position.ToPoint4()) / 3.f;
-				pixelVertex.position.z = zBufferValue;
-				pixelVertex.position.w = interpolatedDepth;
+					if (zBufferValue < 0 || zBufferValue > 1) continue;
 
 
-				pixelVertex.uv = Vector2::Interpolate(m_pUMesh->vertices_out[t0].uv, m_pUMesh->vertices_out[t1].uv, m_pUMesh->vertices_out[t2].uv,
-					v0.w, v1.w, v2.w, interpolationScale0, interpolationScale1, interpolationScale2, interpolatedDepth, wProduct);
 
-				pixelVertex.normal = Vector3::Interpolate(m_pUMesh->vertices_out[t0].normal, m_pUMesh->vertices_out[t1].normal, m_pUMesh->vertices_out[t2].normal,
-					v0.w, v1.w, v2.w, interpolationScale0, interpolationScale1, interpolationScale2, interpolatedDepth, wProduct);
-				pixelVertex.normal.Normalize();
+					int pixelIndex = px + (py * width);
+					if (zBufferValue >= pDepthBufferPixels[pixelIndex]) continue;
+
+					pDepthBufferPixels[pixelIndex] = zBufferValue;
+
+					// Interpolated depth for final color calculation
+					float interpolatedDepth = wProduct / (v1.w * v2.w * interpolationScale0 +
+						v0.w * v2.w * interpolationScale1 +
+						v0.w * v1.w * interpolationScale2);
+					if (interpolatedDepth <= 0) continue;
+
+					// Texture sampling
+					Vertex_Out pixelVertex;
+
+					pixelVertex.position = (m_pUMesh->vertices[t0].position.ToPoint4() + m_pUMesh->vertices[t1].position.ToPoint4() + m_pUMesh->vertices[t2].position.ToPoint4()) / 3.f;
+					pixelVertex.position.z = zBufferValue;
+					pixelVertex.position.w = interpolatedDepth;
 
 
-				pixelVertex.tangent = Vector3::Interpolate(m_pUMesh->vertices_out[t0].tangent, m_pUMesh->vertices_out[t1].tangent, m_pUMesh->vertices_out[t2].tangent,
-					v0.w, v1.w, v2.w, interpolationScale0, interpolationScale1, interpolationScale2, interpolatedDepth, wProduct);
-				pixelVertex.tangent.Normalize();
+					pixelVertex.uv = Vector2::Interpolate(m_pUMesh->vertices_out[t0].uv, m_pUMesh->vertices_out[t1].uv, m_pUMesh->vertices_out[t2].uv,
+						v0.w, v1.w, v2.w, interpolationScale0, interpolationScale1, interpolationScale2, interpolatedDepth, wProduct);
 
-				pixelVertex.viewDirection = Vector3::Interpolate(m_pUMesh->vertices_out[t0].viewDirection, m_pUMesh->vertices_out[t1].viewDirection, m_pUMesh->vertices_out[t2].viewDirection,
-					v0.w, v1.w, v2.w, interpolationScale0, interpolationScale1, interpolationScale2, interpolatedDepth, wProduct);
-				pixelVertex.viewDirection.Normalize();
+					pixelVertex.normal = Vector3::Interpolate(m_pUMesh->vertices_out[t0].normal, m_pUMesh->vertices_out[t1].normal, m_pUMesh->vertices_out[t2].normal,
+						v0.w, v1.w, v2.w, interpolationScale0, interpolationScale1, interpolationScale2, interpolatedDepth, wProduct);
+					pixelVertex.normal.Normalize();
 
-				// If texture mapping is enabled, sample the texture
-				if (displayMode == DisplayMode::FinalColor)
-				{
-					finalColor = m_pEffect->GetDiffuseTexture()->Sample(pixelVertex.uv);
+
+					pixelVertex.tangent = Vector3::Interpolate(m_pUMesh->vertices_out[t0].tangent, m_pUMesh->vertices_out[t1].tangent, m_pUMesh->vertices_out[t2].tangent,
+						v0.w, v1.w, v2.w, interpolationScale0, interpolationScale1, interpolationScale2, interpolatedDepth, wProduct);
+					pixelVertex.tangent.Normalize();
+
+					pixelVertex.viewDirection = Vector3::Interpolate(m_pUMesh->vertices_out[t0].viewDirection, m_pUMesh->vertices_out[t1].viewDirection, m_pUMesh->vertices_out[t2].viewDirection,
+						v0.w, v1.w, v2.w, interpolationScale0, interpolationScale1, interpolationScale2, interpolatedDepth, wProduct);
+					pixelVertex.viewDirection.Normalize();
+
+					// If texture mapping is enabled, sample the texture
+					if (displayMode == DisplayMode::DepthBuffer)
+					{
+						auto clampedValue = Remap(zBufferValue, 0.95f, 1.f, 0.f, 1.f);
+						finalColor = ColorRGB(clampedValue, clampedValue, clampedValue);
+					}
+					if (displayMode == DisplayMode::ShadingMode)
+					{
+						finalColor = PixelShading(pixelVertex, shadingMode, isNormalMap);
+					}
+
+					finalColor.MaxToOne();
+
+					pBackBufferPixels[pixelIndex] = SDL_MapRGB(pBackBuffer->format,
+						static_cast<uint8_t>(finalColor.r * 255.f),
+						static_cast<uint8_t>(finalColor.g * 255.f),
+						static_cast<uint8_t>(finalColor.b * 255.f));
 				}
-				if (displayMode == DisplayMode::DepthBuffer)
-				{
-					auto clampedValue = Remap(zBufferValue, 0.8f, 1.f, 0.f, 1.f);
-					finalColor = ColorRGB(clampedValue, clampedValue, clampedValue);
-				}
-				if (displayMode == DisplayMode::ShadingMode)
-				{
-					finalColor = PixelShading(pixelVertex, shadingMode, isNormalMap);
-				}
-
-				finalColor.MaxToOne();
-
-				pBackBufferPixels[pixelIndex] = SDL_MapRGB(pBackBuffer->format,
-					static_cast<uint8_t>(finalColor.r * 255.f),
-					static_cast<uint8_t>(finalColor.g * 255.f),
-					static_cast<uint8_t>(finalColor.b * 255.f));
 			}
 		}
+
 	}
 }
 

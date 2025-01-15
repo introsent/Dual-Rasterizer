@@ -88,7 +88,14 @@ int main(int argc, char* args[])
 				}
 				if (e.key.keysym.scancode == SDL_SCANCODE_F5)
 				{
-					pRenderer->ChangeShadingMode();
+					if (pRenderer->GetDisplayMode() == DisplayMode::DepthBuffer)
+					{
+						pRenderer->SetDisplayMode(DisplayMode::ShadingMode);
+					}
+					else
+					{
+						pRenderer->ChangeShadingMode();
+					}
 				}
 				if (e.key.keysym.scancode == SDL_SCANCODE_F6)
 				{
@@ -96,8 +103,17 @@ int main(int argc, char* args[])
 				}
 				if (e.key.keysym.scancode == SDL_SCANCODE_F7)
 				{
-					//pRenderer->Change
+					pRenderer->SetDisplayMode(DisplayMode::DepthBuffer);
 				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F7)
+				{
+					pRenderer->SetDisplayMode(DisplayMode::DepthBuffer);
+				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F8)
+				{
+					pRenderer->SetDisplayMode(DisplayMode::BoundingBox);
+				}
+
 				break;
 			default: ;
 			}

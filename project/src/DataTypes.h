@@ -28,7 +28,7 @@ namespace dae
 	};
 
 	enum class DisplayMode {
-		FinalColor,
+		BoundingBox,
 		DepthBuffer,
 		ShadingMode
 	};
