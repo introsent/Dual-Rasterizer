@@ -209,8 +209,8 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 					auto weightP1 = Vector2::Cross(edge1_2D, p1) / area;
 					auto weightP2 = Vector2::Cross(edge2_2D, p2) / area;
 
-					auto totalArea = weightP0 + weightP1 + weightP2;
-					if (!(abs(totalArea - 1) <= eps) && !(abs(totalArea + 1) <= eps)) continue;
+					auto total= weightP0 + weightP1 + weightP2;
+					if (!(abs(total - 1) <= eps) && !(abs(total + 1) <= eps)) continue;
 
 					if (cullingMode == CullingMode::Back)
 					{
@@ -360,7 +360,7 @@ ColorRGB Mesh3D::PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNor
 	if (isNormalMap)
 	{
 		Vector3 binormal = Vector3::Cross(v.normal, v.tangent);
-		Matrix tangentSpaceAxis = Matrix{ v.tangent, binormal, v.normal, Vector3::Zero };
+		//Matrix tangentSpaceAxis = Matrix{ v.tangent, binormal, v.normal, Vector3::Zero };
 
 		ColorRGB normalMapSample = m_pEffect->GetNormalTexture()->Sample(v.uv);
 		v.normal = (v.tangent * (2.f * normalMapSample.r - 1.f) + binormal * (2.f * normalMapSample.g - 1.f) + v.normal * (2.f * normalMapSample.b - 1.f)).Normalized();

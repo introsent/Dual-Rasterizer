@@ -30,6 +30,28 @@ void ShutDown(SDL_Window* pWindow)
 
 int main(int argc, char* args[])
 {
+	const std::string MAGENTA = "\033[35m";
+	const std::string YELLOW = "\033[33m";
+	const std::string GREEN = "\033[32m";
+	const std::string RESET = "\033[0m";
+
+	std::cout << YELLOW  << "[Key Bindings - SHARED]" << RESET << std::endl;
+	std::cout << YELLOW  << "   [F1]   Toggle Rasterizer Mode (HARDWARE/SOFTWARE)" << RESET << std::endl;
+	std::cout << YELLOW  << "   [F2]   Toggle Vehicle Rotation (ON/OFF)" << RESET << std::endl;
+	std::cout << YELLOW  << "   [F9]  Cycle CullMode (BACK/FRONT/NONE)" << RESET << std::endl;
+	std::cout << YELLOW  << "   [F10] Toggle Uniform ClearColor (ON/OFF)" << RESET << std::endl;
+	std::cout << YELLOW  << "   [F11] Toggle Print FPS (ON/OFF)" << RESET << std::endl << "\n";
+						 
+	std::cout << GREEN   << "[Key Bindings - HARDWARE]" << RESET << std::endl;
+	std::cout << GREEN   << "   [F3] Toggle FireFX (ON/OFF)" << RESET << std::endl;
+	std::cout << GREEN   << "   [F4] Cycle Sampler State (POINT/LINEAR/ANISOTROPIC)" << RESET << std::endl << "\n";
+
+	std::cout << MAGENTA << "[Key Bindings - SOFTWARE]" << RESET << std::endl;
+	std::cout << MAGENTA << "   [F5] Cycle Shading Mode (COMBINED/OBSERVED_AREA/DIFFUSE/SPECULAR)" << RESET << std::endl;
+	std::cout << MAGENTA << "   [F6] Toggle NormalMap (ON/OFF)" << RESET << std::endl;
+	std::cout << MAGENTA << "   [F7] Toggle DepthBuffer Visualization (ON/OFF)" << RESET << std::endl;
+	std::cout << MAGENTA << "   [F8] Toggle BoundingBox Visualization (ON/OFF)" << RESET << std::endl;
+
 	//Unreferenced parameters
 	(void)argc;
 	(void)args;
