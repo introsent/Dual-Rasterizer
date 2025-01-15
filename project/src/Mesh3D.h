@@ -30,6 +30,7 @@ public:
 	ColorRGB PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNormalMap) const;
 
 	bool CheckClipping(const Vector4& v0, const Vector4& v1, const Vector4& v2) const;
+	void ConvertToScreenSpace(float width, float height, Vector4& v0, Vector4& v1, Vector4& v2) const;
 
 	inline float Remap(float value, float start1, float stop1, float start2, float stop2) const
 	{

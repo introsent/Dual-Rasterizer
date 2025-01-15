@@ -2,7 +2,7 @@
 #include "Camera.h"
 #include "Texture.h"
 #include <memory.h>
-constexpr float eps = float( 1e-6);
+constexpr float eps = float( 1e-4);
 Mesh3D::Mesh3D(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Effect* pEffect) : m_pEffect(pEffect)
 {
 	m_pUMesh = std::unique_ptr<Mesh>(new Mesh());
@@ -161,38 +161,7 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 			continue; // All vertices are outside the clip space, skip rendering
 		}
 
-		v0.x = v0.x * 0.5f + 0.5f;
-		v0.y = (1.0f - v0.y) * 0.5f;
-
-		v1.x = v1.x * 0.5f + 0.5f;
-		v1.y = (1.0f - v1.y) * 0.5f;
-
-		v2.x = v2.x * 0.5f + 0.5f;
-		v2.y = (1.0f - v2.y) * 0.5f;
-
-		// Backface culling (skip if the triangle is facing away from the camera)
-		//if (cullingMode == CullingMode::Back)
-		//{
-		//	Vector3 edge0 = v1 - v0;
-		//	Vector3 edge1 = v2 - v0;
-		//	Vector3 normal = Vector3::Cross(edge0, edge1);
-		//	if (Vector3::Dot(normal.Normalized(), camera.forward) <= 0) continue;
-		//}
-		//else if (cullingMode == CullingMode::Front)
-		//{
-		//	Vector3 edge0 = v1 - v0;
-		//	Vector3 edge1 = v2 - v0;
-		//	Vector3 normal = Vector3::Cross(edge0, edge1);
-		//	if (Vector3::Dot(normal.Normalized(), camera.forward) > 0.f) continue;
-		//}
-
-		// Transform coordinates to screen space
-		v0.x *= width;
-		v1.x *= width;
-		v2.x *= width;
-		v0.y *= height;
-		v1.y *= height;
-		v2.y *= height;
+		ConvertToScreenSpace(width, height, v0, v1, v2);
 
 		// Compute bounding box of the triangle
 		int minX = std::max(0, static_cast<int>(std::floor(std::min({ v0.x, v1.x, v2.x }))));
@@ -249,19 +218,19 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 					}
 					else if (cullingMode == CullingMode::Front)
 					{
-						if (!(weightP0 < 0.f && weightP1 < 0.f && weightP2 < 0.f)) continue;
+						if (!(weightP0 < 0.f && weightP1 < 0.f && weightP2 < 0.f))
+						{
+							continue;
+						}
 					}
 					else if (cullingMode == CullingMode::No)
 					{
 						if (!((weightP0 < 0.f && weightP1 < 0.f && weightP2 < 0.f) || (weightP0 >= 0.f && weightP1 >= 0.f && weightP2 >= 0.f))) continue;
 					}
 
-					
-					//float reciprocalTotalArea = 1.0f / totalArea;
-
-					float interpolationScale0 = weightP0;
-					float interpolationScale1 = weightP1;
-					float interpolationScale2 = weightP2;
+					float interpolationScale0 = abs(weightP0);
+					float interpolationScale1 = abs(weightP1);
+					float interpolationScale2 = abs(weightP2);
 
 					// Compute z-buffer value for depth testing
 					float zBufferValue = 1.f / (1.f / v0.z * interpolationScale0 +
@@ -439,4 +408,16 @@ bool Mesh3D::CheckClipping(const Vector4& v0, const Vector4& v1, const Vector4& 
 		(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z < 0 || v2.z > 1) ) return false;
 
 	return true;
+}
+
+void Mesh3D::ConvertToScreenSpace(float width, float height, Vector4& v0, Vector4& v1, Vector4& v2) const
+{
+	v0.x = width * (v0.x * 0.5f + 0.5f);
+	v0.y = height * ((1.0f - v0.y) * 0.5f);
+
+	v1.x = width * (v1.x * 0.5f + 0.5f);
+	v1.y = height* ((1.0f - v1.y) * 0.5f);
+
+	v2.x = width * (v2.x * 0.5f + 0.5f);
+	v2.y = height * ((1.0f - v2.y) * 0.5f);
 }
