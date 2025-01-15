@@ -68,7 +68,21 @@ namespace dae {
 			return;
 
 		// 1. Clear RTV & DSV
-		constexpr float color[4] = { 0.f, 0.f, 0.3f, 1.f };
+		float color[4]; // Declare the array
+
+		if (m_IsClearColorUniform) {
+			color[0] = 0.1f;
+			color[1] = 0.1f;
+			color[2] = 0.1f;
+			color[3] = 1.0f;
+		}
+		else {
+			color[0] = 0.39f;
+			color[1] = 0.59f;
+			color[2] = 0.93f;
+			color[3] = 1.0f;
+		}
+		
 		m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, color);
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
@@ -87,7 +101,17 @@ namespace dae {
 		std::fill(m_pDepthBufferPixels, m_pDepthBufferPixels + (m_Width * m_Height), std::numeric_limits<float>::max());
 
 		// Clear screen with black color
-		SDL_Color clearColor = { 100, 100, 100, 255 };
+		SDL_Color clearColor;
+		if (m_IsClearColorUniform) 
+		{
+			clearColor = { int(0.1f * 255),  int(0.1f * 255),  int(0.1f * 255), 255 };
+		}
+		else
+		{
+			clearColor = { int(0.39f * 255),  int(0.39f * 255),  int(0.39f * 255), 255 };
+		}
+
+		SDL_Color;
 		Uint32 color = SDL_MapRGB(m_pBackBuffer->format, clearColor.r, clearColor.g, clearColor.b);
 		SDL_FillRect(m_pBackBuffer, nullptr, color);
 
@@ -183,6 +207,11 @@ namespace dae {
 	void Renderer::ChangeIsNormalMap()
 	{
 		m_IsNormalMap = !m_IsNormalMap; 
+	}
+
+	void Renderer::ChangeIsClearColorUniform()
+	{
+		m_IsClearColorUniform = !m_IsClearColorUniform;
 	}
 
 	void Renderer::OnDeviceLost()

@@ -35,6 +35,7 @@ namespace dae
 		void ChangeIsRotating();
 		void ChangeToRenderFireMesh();
 		void ChangeIsNormalMap();
+		void ChangeIsClearColorUniform();
 	private:
 		SDL_Window* m_pWindow{};
 
@@ -79,7 +80,7 @@ namespace dae
 		bool m_IsRotating{ true };
 		bool m_ToRenderFireMesh{ true };
 
-
+		bool m_IsClearColorUniform{ false };
 
 		std::unique_ptr<VehicleEffect> m_pVehicleEffect;
 		std::unique_ptr<FireEffect> m_pFireEffect;

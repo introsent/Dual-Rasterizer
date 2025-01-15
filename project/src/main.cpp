@@ -57,6 +57,7 @@ int main(int argc, char* args[])
 	pTimer->Start();
 	float printTimer = 0.f;
 	bool isLooping = true;
+	bool printFPS = false;
 	while (isLooping)
 	{
 		//--------- Get input events ---------
@@ -125,6 +126,14 @@ int main(int argc, char* args[])
 					}
 					
 				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F10)
+				{
+					pRenderer->ChangeIsClearColorUniform();
+				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F11)
+				{
+					printFPS = !printFPS;
+				}
 
 				break;
 			default: ;
@@ -143,7 +152,10 @@ int main(int argc, char* args[])
 		if (printTimer >= 1.f)
 		{
 			printTimer = 0.f;
-			std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;
+			if (printFPS)
+			{
+				std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;
+			}
 		}
 	}
 	pTimer->Stop();
