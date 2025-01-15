@@ -118,7 +118,7 @@ namespace dae {
 		SDL_LockSurface(m_pBackBuffer);
 
 		// RENDER LOGIC
-		m_pVehicle.get()->RenderCPU(m_Width, m_Height, m_CurrentShadingMode, m_CurrentDisplayMode, m_IsNormalMap, m_pBackBuffer, m_pBackBufferPixels, m_pDepthBufferPixels);
+		m_pVehicle.get()->RenderCPU(m_Width, m_Height, m_CurrentShadingMode, m_CurrentDisplayMode, m_CullingMode, *m_pCamera.get(), m_IsNormalMap, m_pBackBuffer, m_pBackBufferPixels, m_pDepthBufferPixels);
 
 		// Unlock after rendering
 		SDL_UnlockSurface(m_pBackBuffer);

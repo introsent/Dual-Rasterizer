@@ -22,7 +22,7 @@ public:
 	Mesh3D& operator=(Mesh3D&& rhs) = delete;
 
 	void RenderGPU(const Vector3& cameraPosition, const Matrix& pWorldMatrix, const Matrix& pWorldViewProjectionMatrix, ID3D11DeviceContext* pDeviceContext) const;
-	void RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMode displayMode, bool isNormalMap, SDL_Surface* pBackBuffer, uint32_t* pBackBufferPixels, float* pDepthBufferPixels) const;
+	void RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMode displayMode, CullingMode cullingMode, const Camera& camera, bool isNormalMap, SDL_Surface* pBackBuffer, uint32_t* pBackBufferPixels, float* pDepthBufferPixels) const;
 
 	void SetCullingMode(CullingMode cullingMode, ID3D11DeviceContext* context);
 

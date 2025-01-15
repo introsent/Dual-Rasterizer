@@ -2,7 +2,7 @@
 #include "Camera.h"
 #include "Texture.h"
 #include <memory.h>
-
+constexpr float eps = float( 1e-6);
 Mesh3D::Mesh3D(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Effect* pEffect) : m_pEffect(pEffect)
 {
 	m_pUMesh = std::unique_ptr<Mesh>(new Mesh());
@@ -127,7 +127,7 @@ void Mesh3D::RenderGPU(const Vector3& cameraPosition, const Matrix& pWorldMatrix
 	}
 }
 
-void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMode displayMode, bool isNormalMap, SDL_Surface* pBackBuffer, uint32_t* pBackBufferPixels, float* pDepthBufferPixels) const
+void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMode displayMode, CullingMode cullingMode, const Camera& camera, bool isNormalMap, SDL_Surface* pBackBuffer, uint32_t* pBackBufferPixels, float* pDepthBufferPixels) const
 {
 	bool isTriangleList = m_pUMesh->primitiveTopology == PrimitiveTopology::TriangleStrip;
 	// Parallelize over triangles
@@ -161,11 +161,22 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 			|| ((v0.z < 0 || v0.z > 1) || (v1.z < 0 || v1.z > 1) || (v2.z < 0 || v2.z > 1))) continue;
 
 
+
 		// Backface culling (skip if the triangle is facing away from the camera)
-		Vector3 edge0 = v1 - v0;
-		Vector3 edge1 = v2 - v0;
-		Vector3 normal = Vector3::Cross(edge0, edge1);
-		if (normal.z <= 0) continue;
+		//if (cullingMode == CullingMode::Back)
+		//{
+		//	Vector3 edge0 = v1 - v0;
+		//	Vector3 edge1 = v2 - v0;
+		//	Vector3 normal = Vector3::Cross(edge0, edge1);
+		//	if (Vector3::Dot(normal.Normalized(), camera.forward) <= 0) continue;
+		//}
+		//else if (cullingMode == CullingMode::Front)
+		//{
+		//	Vector3 edge0 = v1 - v0;
+		//	Vector3 edge1 = v2 - v0;
+		//	Vector3 normal = Vector3::Cross(edge0, edge1);
+		//	if (Vector3::Dot(normal.Normalized(), camera.forward) > 0.f) continue;
+		//}
 
 
 		// Transform coordinates to screen space
@@ -207,7 +218,7 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 
 			float wProduct = v0.w * v1.w * v2.w;
 
-
+			auto area = std::abs(Vector2::Cross(edge0_2D, edge1_2D));
 
 			// Parallelize over rows of pixels (py)
 #pragma omp parallel for
@@ -220,13 +231,27 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 					auto p1 = P - Vector2(v2.x, v2.y);
 					auto p2 = P - Vector2(v0.x, v0.y);
 
-					auto weightP0 = Vector2::Cross(edge0_2D, p0);
-					auto weightP1 = Vector2::Cross(edge1_2D, p1);
-					auto weightP2 = Vector2::Cross(edge2_2D, p2);
-
-					if (weightP0 < 0 || weightP1 < 0 || weightP2 < 0) continue;
+					auto weightP0 = Vector2::Cross(edge0_2D, p0) / area;
+					auto weightP1 = Vector2::Cross(edge1_2D, p1) / area;
+					auto weightP2 = Vector2::Cross(edge2_2D, p2) / area;
 
 					auto totalArea = weightP0 + weightP1 + weightP2;
+					if (!(abs(totalArea - 1) <= eps) && !(abs(totalArea + 1) <= eps)) continue;
+
+					if (cullingMode == CullingMode::Back)
+					{
+						if (!(weightP0 >= 0.f && weightP1 >= 0.f && weightP2 >= 0.f)) continue;
+					}
+					else if (cullingMode == CullingMode::Front)
+					{
+						if (!(weightP0 < 0.f && weightP1 < 0.f && weightP2 < 0.f)) continue;
+					}
+					else if (cullingMode == CullingMode::No)
+					{
+						if (!((weightP0 < 0.f && weightP1 < 0.f && weightP2 < 0.f) || (weightP0 >= 0.f && weightP1 >= 0.f && weightP2 >= 0.f))) continue;
+					}
+
+					
 					float reciprocalTotalArea = 1.0f / totalArea;
 
 					float interpolationScale0 = weightP0 * reciprocalTotalArea;
