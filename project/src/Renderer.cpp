@@ -111,7 +111,6 @@ namespace dae {
 			clearColor = { int(0.39f * 255),  int(0.39f * 255),  int(0.39f * 255), 255 };
 		}
 
-		SDL_Color;
 		Uint32 color = SDL_MapRGB(m_pBackBuffer->format, clearColor.r, clearColor.g, clearColor.b);
 		SDL_FillRect(m_pBackBuffer, nullptr, color);
 
@@ -212,6 +211,26 @@ namespace dae {
 	void Renderer::ChangeIsClearColorUniform()
 	{
 		m_IsClearColorUniform = !m_IsClearColorUniform;
+	}
+
+	void Renderer::ChangeCullingMode()
+	{
+		switch (m_CullingMode)
+		{
+		case CullingMode::Back:
+			m_CullingMode = CullingMode::Front;
+			break;
+		case CullingMode::Front:
+			m_CullingMode = CullingMode::No;
+			break;
+		case CullingMode::No:
+			m_CullingMode = CullingMode::Back;
+			break;
+		}
+		std::cout << "Culling Mode: " << static_cast<int>(m_CullingMode) << std::endl;
+
+		m_pVehicle->SetCullingMode(m_CullingMode, m_pDeviceContext);
+		m_pFire->SetCullingMode(CullingMode::No, m_pDeviceContext);
 	}
 
 	void Renderer::OnDeviceLost()

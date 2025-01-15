@@ -27,11 +27,6 @@ float gPI = 3.14159265358979323846f;
 SamplerState gSamplerState : register(s0);
 
 //Update states
-RasterizerState gRasterizerState
-{
-    CullMode = back;
-    FrontCounterClockwise = false;
-};
 
 
 BlendState gBlendState
@@ -169,7 +164,6 @@ technique11 DefaultTechnique
 {
 	pass P0
 	{
-        SetRasterizerState(gRasterizerState);
         SetDepthStencilState(gDepthStencilState, 0);
         SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFFF);
 		SetVertexShader(CompileShader(vs_5_0, VS()));

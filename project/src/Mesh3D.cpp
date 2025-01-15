@@ -113,6 +113,7 @@ void Mesh3D::RenderGPU(const Vector3& cameraPosition, const Matrix& pWorldMatrix
 
 	//5. Set World View Projection Matrix
 	m_pEffect->Update(cameraPosition, pWorldMatrix, pWorldViewProjectionMatrix);
+	pDeviceContext->RSSetState(m_pEffect->GetCurrentRasterizerState());
 
 	//6. Draw
 	D3DX11_TECHNIQUE_DESC techniqueDesc{};
@@ -297,6 +298,25 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 			}
 		}
 
+	}
+}
+
+void Mesh3D::SetCullingMode(CullingMode cullingMode, ID3D11DeviceContext* context)
+{	
+	switch (cullingMode)
+	{
+	case CullingMode::Back:
+		m_pEffect->SetCullingMode(D3D11_CULL_BACK);
+		m_pEffect->ApplyCullingMode(context);
+		break;
+	case CullingMode::Front:
+		m_pEffect->SetCullingMode(D3D11_CULL_FRONT);
+		m_pEffect->ApplyCullingMode(context);
+		break;
+	case CullingMode::No:
+		m_pEffect->SetCullingMode(D3D11_CULL_NONE);
+		m_pEffect->ApplyCullingMode(context);
+		break;
 	}
 }
 

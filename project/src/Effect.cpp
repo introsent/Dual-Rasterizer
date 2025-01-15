@@ -18,6 +18,14 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
     {
         std::wcout << L"m_pMatWorldViewProjVariable not valid\n";
     }
+
+    // Initialize rasterizer states for all culling modes
+    m_RasterStates[D3D11_CULL_BACK] = CreateRasterizerState(pDevice, D3D11_CULL_BACK);
+    m_RasterStates[D3D11_CULL_FRONT] = CreateRasterizerState(pDevice, D3D11_CULL_FRONT);
+    m_RasterStates[D3D11_CULL_NONE] = CreateRasterizerState(pDevice, D3D11_CULL_NONE);
+
+    // Set default rasterizer state
+    SetCullingMode(D3D11_CULL_BACK);
 }
 
 Effect::~Effect()
@@ -42,6 +50,8 @@ Effect::~Effect()
         m_pEffect->Release();
         m_pEffect = nullptr;
     }
+
+    CleanupRasterStates();
 }
 
 ID3DX11Effect* Effect::GetEffect() const
@@ -64,6 +74,52 @@ void Effect::Update(const Vector3& cameraPosition, const Matrix& pWorldMatrix, c
     m_pMatWorldViewProjVariable->SetMatrix(reinterpret_cast<const float*>(&pWorldViewProjectionMatrix));
 }
 
+void Effect::SetCullingMode(D3D11_CULL_MODE cullMode)
+{
+    if (m_RasterStates.find(cullMode) != m_RasterStates.end()) {
+        m_CurrentRasterState = m_RasterStates[cullMode];
+    }
+}
+
+void Effect::ApplyCullingMode(ID3D11DeviceContext* pContext)
+{
+    if (m_CurrentRasterState) {
+        pContext->RSSetState(m_CurrentRasterState);
+    }
+}
+
+
+ID3D11RasterizerState* Effect::GetCurrentRasterizerState() const
+{
+    return m_CurrentRasterState;
+}
+
+ID3D11RasterizerState* Effect::CreateRasterizerState(ID3D11Device* pDevice, D3D11_CULL_MODE cullMode)
+{
+    D3D11_RASTERIZER_DESC rasterDesc = {};
+    rasterDesc.FillMode = D3D11_FILL_SOLID;
+    rasterDesc.CullMode = cullMode;
+    rasterDesc.FrontCounterClockwise = FALSE;
+    rasterDesc.DepthClipEnable = TRUE;
+
+    ID3D11RasterizerState* rasterState = nullptr;
+    HRESULT hr = pDevice->CreateRasterizerState(&rasterDesc, &rasterState);
+    if (FAILED(hr)) {
+        // Handle error appropriately
+        return nullptr;
+    }
+    return rasterState;
+}
+
+void Effect::CleanupRasterStates()
+{
+    for (auto& pair : m_RasterStates) {
+        if (pair.second) {
+            pair.second->Release();
+        }
+    }
+    m_RasterStates.clear();
+}
 
 ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile)
 {

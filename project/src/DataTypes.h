@@ -54,6 +54,13 @@ namespace dae
 		Hardware
 	};
 
+	enum CullingMode
+	{
+		Front,
+		Back,
+		No
+	};
+
 
 	struct Mesh
 	{

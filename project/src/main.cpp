@@ -126,6 +126,11 @@ int main(int argc, char* args[])
 					}
 					
 				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F9)
+				{
+					pRenderer->ChangeCullingMode();
+				}
+
 				if (e.key.keysym.scancode == SDL_SCANCODE_F10)
 				{
 					pRenderer->ChangeIsClearColorUniform();

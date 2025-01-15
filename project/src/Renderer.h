@@ -36,6 +36,7 @@ namespace dae
 		void ChangeToRenderFireMesh();
 		void ChangeIsNormalMap();
 		void ChangeIsClearColorUniform();
+		void ChangeCullingMode();
 	private:
 		SDL_Window* m_pWindow{};
 
@@ -76,9 +77,11 @@ namespace dae
 		RenderingBackendType m_RenderingBackendType{ RenderingBackendType::Hardware };
 		ShadingMode m_CurrentShadingMode{ ShadingMode::Combined };
 		DisplayMode m_CurrentDisplayMode{ DisplayMode::ShadingMode };
+		CullingMode m_CullingMode{ CullingMode::Back };
 		bool m_IsNormalMap{ true };
 		bool m_IsRotating{ true };
 		bool m_ToRenderFireMesh{ true };
+
 
 		bool m_IsClearColorUniform{ false };
 

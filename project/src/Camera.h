@@ -103,13 +103,13 @@ namespace dae
 
 			if (leftButtonPressed)
 			{
-				origin += forward * mouseY * velocity.z * 0.01f;
-				totalPitch += mouseX * rotationVelocity;
+				origin += forward * float(mouseY) * velocity.z * 0.01f;
+				totalPitch += float(mouseX) * rotationVelocity;
 			}
 			if (rightButtonPressed)
 			{
-				totalPitch += mouseX * rotationVelocity;
-				totalYaw += mouseY * rotationVelocity;
+				totalPitch += float(mouseX) * rotationVelocity;
+				totalYaw += float(mouseY) * rotationVelocity;
 			}
 
 			Matrix finalRotation = finalRotation.CreateRotation(totalYaw, totalPitch, 0.f);
