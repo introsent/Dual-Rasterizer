@@ -279,7 +279,7 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 					// If texture mapping is enabled, sample the texture
 					if (displayMode == DisplayMode::DepthBuffer)
 					{
-						auto clampedValue = Remap(zBufferValue, 0.95f, 1.f, 0.f, 1.f);
+						auto clampedValue = std::clamp(Remap(zBufferValue, 0.995f, 1.f, 0.f, 1.f), 0.f, 1.f);
 						finalColor = ColorRGB(clampedValue, clampedValue, clampedValue);
 					}
 					if (displayMode == DisplayMode::ShadingMode)
