@@ -124,7 +124,10 @@ namespace dae {
 		m_pVehicle.get()->RenderCPU(m_Width, m_Height, m_CurrentShadingMode, m_CurrentDisplayMode, m_CullingMode, *m_pCamera.get(), m_IsNormalMap, m_pBackBuffer, m_pBackBufferPixels, m_pDepthBufferPixels);
 		if (m_ToRenderFireMesh)
 		{
-			m_pFire.get()->RenderCPU(m_Width, m_Height, m_CurrentShadingMode, m_CurrentDisplayMode, CullingMode::No, *m_pCamera.get(), false, m_pBackBuffer, m_pBackBufferPixels, m_pDepthBufferPixels);
+			if (m_CurrentShadingMode == ShadingMode::Combined && m_CurrentDisplayMode == DisplayMode::ShadingMode)
+			{
+				m_pFire.get()->RenderCPU(m_Width, m_Height, m_CurrentShadingMode, m_CurrentDisplayMode, CullingMode::No, *m_pCamera.get(), false, m_pBackBuffer, m_pBackBufferPixels, m_pDepthBufferPixels);
+			}
 		}
 		// Unlock after rendering
 		SDL_UnlockSurface(m_pBackBuffer);

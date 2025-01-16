@@ -295,8 +295,11 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 							SDL_GetRGB(existingPixel, pBackBuffer->format, &existingR, &existingG, &existingB);
 							existingPixelColor = { existingR / 255.0f, existingG / 255.0f, existingB / 255.0f };
 
-							existingPixelColor.MaxToOne();
+							//existingPixelColor.MaxToOne();
 
+							existingPixelColor.r = std::clamp(existingPixelColor.r, 0.f, 1.f);
+							existingPixelColor.g = std::clamp(existingPixelColor.g, 0.f, 1.f);
+							existingPixelColor.b = std::clamp(existingPixelColor.b, 0.f, 1.f);
 
 							finalColor = PixelShading(pixelVertex, shadingMode, isNormalMap, existingPixelColor);
 						}
@@ -305,8 +308,9 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 							finalColor = PixelShading(pixelVertex, shadingMode, isNormalMap);
 						}
 					}
-				
-					finalColor.MaxToOne();
+					finalColor.r = std::clamp(finalColor.r, 0.f, 1.f); //Clamp because MaxToOne version has some artifacts
+					finalColor.g = std::clamp(finalColor.g, 0.f, 1.f);
+					finalColor.b = std::clamp(finalColor.b, 0.f, 1.f);
 
 					pBackBufferPixels[pixelIndex] = SDL_MapRGB(pBackBuffer->format,
 						static_cast<uint8_t>(finalColor.r * 255.f),
@@ -374,7 +378,7 @@ ColorRGB Mesh3D::PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNor
 	Vector3 lightDirection = { .577f, -.577f,  .577f };
 	constexpr float lightIntensity = 7.f;
 	constexpr float shininess = 25.f;
-	constexpr ColorRGB ambient = { .03f,.03f,.03f };
+	constexpr ColorRGB ambient = { .025f,.025f,.025f };
 
 	
 	if (isNormalMap)
@@ -459,7 +463,7 @@ ColorRGB Mesh3D::PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNor
 		{
 			finalColor = diffuse;
 		}
-		
+
 		break;
 	}
 
