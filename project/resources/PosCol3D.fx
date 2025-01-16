@@ -14,6 +14,7 @@ Texture2D gGlossinessMap : GlosinessMap;
 
 //Lights / Materials
 float3 gLightDirection : LightDirection = float3(0.577f, -0.577f, 0.577f);
+float3 gAmbient : Ambient = float3(0.025f, 0.025f, 0.025f);
 float  gLightIntensity = 7.0f;
 float  gShininess = 25.0f;
 
@@ -145,7 +146,7 @@ float3 Shade(VS_OUTPUT input)
     
 
     //Return combined
-    return float3(specular + diffuse * observedArea * gLightIntensity);
+    return float3(gAmbient + specular + diffuse * observedArea * gLightIntensity);
 
 }
 
