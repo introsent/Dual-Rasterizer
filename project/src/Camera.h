@@ -89,7 +89,7 @@ namespace dae
 
 			const float deltaTime = pTimer->GetElapsed();
 
-			Vector3 velocity{ 30.f, 10.f, 30.f };
+			Vector3 velocity{ 30.f, 15.f, 30.f };
 			constexpr float rotationVelocity{ 0.1f * PI / 180.0f };
 
 
@@ -109,13 +109,13 @@ namespace dae
 			}
 			else if (leftButtonPressed && rightButtonPressed)
 			{
-				origin += up *float(mouseY)* velocity.z * 0.01f;
+				origin += up *float(mouseY)* velocity.y * 0.01f;
 			}
 
 			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
 			{
-				velocity.x *= 4;
-				velocity.z *= 4;
+				velocity.x *= 3;
+				velocity.z *= 3;
 			}
 
 			if (pKeyboardState[SDL_SCANCODE_W] || pKeyboardState[SDL_SCANCODE_UP])		origin += forward * velocity.z * deltaTime;
