@@ -13,7 +13,7 @@ using namespace dae;
 class Mesh3D final
 {
 public:
-	Mesh3D(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Effect* pEffect);
+	Mesh3D(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Effect* pEffect, bool toApplyTransparency);
 	~Mesh3D();
 
 	Mesh3D(const Mesh3D& other) = delete;
@@ -27,7 +27,7 @@ public:
 	void SetCullingMode(CullingMode cullingMode, ID3D11DeviceContext* context);
 
 	void VertexTransformationFunction(const Camera& camera, const Matrix& rotationMatrix);
-	ColorRGB PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNormalMap) const;
+	ColorRGB PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNormalMap, ColorRGB existingPixelColor = { 0.f, 0.f, 0.f}) const;
 
 	bool CheckClipping(const Vector4& v0, const Vector4& v1, const Vector4& v2) const;
 	void ConvertToScreenSpace(float width, float height, Vector4& v0, Vector4& v1, Vector4& v2) const;
@@ -68,4 +68,5 @@ private:
 	ID3D11Buffer*			m_pIndexBuffer{};
 
 	std::unique_ptr<Mesh>	m_pUMesh{};
+	bool m_ToApplyTransparency; 
 };

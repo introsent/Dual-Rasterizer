@@ -95,4 +95,25 @@ namespace dae
 
 		return { float(r) / 255.f, float(g) / 255.f, float(b) / 255.f };
 	}
+
+	ColorRGBA Texture::SampleWithAlpha(const Vector2& uv) const
+	{
+		float u = uv.x;
+		float v = uv.y;
+
+		int x = static_cast<int>(u * m_pSurface->w);
+		int y = static_cast<int>(v * m_pSurface->h);
+
+		x = std::clamp(x, 0, m_pSurface->w - 1);
+		y = std::clamp(y, 0, m_pSurface->h - 1);
+
+		int pixelIndex = y * m_pSurface->w + x;
+
+		uint32_t pixel = m_pSurfacePixels[pixelIndex];
+
+		Uint8 r, g, b, a;
+		SDL_GetRGBA(pixel, m_pSurface->format, &r, &g, &b, &a);
+
+		return{ float(r) / 255.f, float(g) / 255.f, float(b) / 255.f, float(a) / 255.f };
+	}
 }

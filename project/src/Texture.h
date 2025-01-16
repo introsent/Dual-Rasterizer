@@ -2,6 +2,7 @@
 #include "pch.h"
 #include <memory.h>
 #include "Vector2.h"
+#include "ColorRGBA.h"
 namespace dae
 {
 	class Texture
@@ -14,6 +15,8 @@ namespace dae
 
 		ID3D11ShaderResourceView* GetShaderResourceView() const;
 		ColorRGB Sample(const Vector2& uv) const;
+
+		ColorRGBA SampleWithAlpha(const Vector2& uv) const;
 
 	private:
 		SDL_Surface* m_pSurface;

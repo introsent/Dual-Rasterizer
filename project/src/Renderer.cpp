@@ -63,7 +63,11 @@ namespace dae {
 
 		// Apply transformations
 		if (m_RenderingBackendType == RenderingBackendType::Software)
+		{
 			m_pVehicle->VertexTransformationFunction(*m_pCamera.get(), m_WorldMatrix);
+			m_pFire->VertexTransformationFunction(*m_pCamera.get(), m_WorldMatrix);
+		}
+			
 	}
 
 	void Renderer::RenderGPU() const
@@ -123,7 +127,10 @@ namespace dae {
 
 		// RENDER LOGIC
 		m_pVehicle.get()->RenderCPU(m_Width, m_Height, m_CurrentShadingMode, m_CurrentDisplayMode, m_CullingMode, *m_pCamera.get(), m_IsNormalMap, m_pBackBuffer, m_pBackBufferPixels, m_pDepthBufferPixels);
-
+		if (m_ToRenderFireMesh)
+		{
+			m_pFire.get()->RenderCPU(m_Width, m_Height, m_CurrentShadingMode, m_CurrentDisplayMode, CullingMode::No, *m_pCamera.get(), false, m_pBackBuffer, m_pBackBufferPixels, m_pDepthBufferPixels);
+		}
 		// Unlock after rendering
 		SDL_UnlockSurface(m_pBackBuffer);
 
@@ -259,7 +266,7 @@ namespace dae {
 		
 		Utils::ParseOBJ("resources/vehicle.obj", vertices, indices);
 
-		m_pVehicle = std::make_unique<Mesh3D>(m_pDevice, vertices, indices, m_pVehicleEffect.get());
+		m_pVehicle = std::make_unique<Mesh3D>(m_pDevice, vertices, indices, m_pVehicleEffect.get(), false);
 	}
 
 	void Renderer::InitializeFire()
@@ -269,7 +276,7 @@ namespace dae {
 
 		Utils::ParseOBJ("resources/fireFX.obj", vertices, indices);
 
-		m_pFire = std::make_unique<Mesh3D>(m_pDevice, vertices, indices, m_pFireEffect.get());
+		m_pFire = std::make_unique<Mesh3D>(m_pDevice, vertices, indices, m_pFireEffect.get(), true);
 	}
 
 

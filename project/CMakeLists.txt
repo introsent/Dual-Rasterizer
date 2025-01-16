@@ -13,7 +13,8 @@ set(SOURCES
     "src/VehicleEffect.cpp"
     "src/FireEffect.cpp"
     "src/Mesh3D.cpp" 
-    "src/DataTypes.h")
+    "src/DataTypes.h" 
+    "src/ColorRGBA.h")
 
 # Create the executable
 add_executable(${PROJECT_NAME} ${SOURCES})

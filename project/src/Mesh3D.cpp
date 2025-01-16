@@ -3,7 +3,7 @@
 #include "Texture.h"
 #include <memory.h>
 constexpr float eps = float( 1e-4);
-Mesh3D::Mesh3D(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Effect* pEffect) : m_pEffect(pEffect)
+Mesh3D::Mesh3D(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Effect* pEffect, bool toApplyTransparency) : m_pEffect(pEffect), m_ToApplyTransparency(toApplyTransparency)
 {
 	m_pUMesh = std::unique_ptr<Mesh>(new Mesh());
 	m_pUMesh->vertices = vertices;
@@ -161,7 +161,7 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 			continue; // All vertices are outside the clip space, skip rendering
 		}
 
-		ConvertToScreenSpace(width, height, v0, v1, v2);
+		ConvertToScreenSpace(float(width), float(height), v0, v1, v2);
 
 		// Compute bounding box of the triangle
 		int minX = std::max(0, static_cast<int>(std::floor(std::min({ v0.x, v1.x, v2.x }))));
@@ -227,7 +227,7 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 					{
 						if (!((weightP0 < 0.f && weightP1 < 0.f && weightP2 < 0.f) || (weightP0 >= 0.f && weightP1 >= 0.f && weightP2 >= 0.f))) continue;
 					}
-
+				   
 					float interpolationScale0 = abs(weightP0);
 					float interpolationScale1 = abs(weightP1);
 					float interpolationScale2 = abs(weightP2);
@@ -239,12 +239,15 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 
 					if (zBufferValue < 0 || zBufferValue > 1) continue;
 
-
-
 					int pixelIndex = px + (py * width);
-					if (zBufferValue >= pDepthBufferPixels[pixelIndex]) continue;
 
-					pDepthBufferPixels[pixelIndex] = zBufferValue;
+					if (zBufferValue >= pDepthBufferPixels[pixelIndex]) continue;
+					
+					if (!m_ToApplyTransparency)
+					{
+						pDepthBufferPixels[pixelIndex] = zBufferValue;
+					}
+					
 
 					// Interpolated depth for final color calculation
 					float interpolatedDepth = wProduct / (v1.w * v2.w * interpolationScale0 +
@@ -284,9 +287,25 @@ void Mesh3D::RenderCPU(int width, int height, ShadingMode shadingMode, DisplayMo
 					}
 					if (displayMode == DisplayMode::ShadingMode)
 					{
-						finalColor = PixelShading(pixelVertex, shadingMode, isNormalMap);
-					}
+						if (m_ToApplyTransparency)
+						{
+							ColorRGB existingPixelColor;
+							uint32_t existingPixel = pBackBufferPixels[pixelIndex];
+							uint8_t existingR, existingG, existingB;
+							SDL_GetRGB(existingPixel, pBackBuffer->format, &existingR, &existingG, &existingB);
+							existingPixelColor = { existingR / 255.0f, existingG / 255.0f, existingB / 255.0f };
 
+							existingPixelColor.MaxToOne();
+
+
+							finalColor = PixelShading(pixelVertex, shadingMode, isNormalMap, existingPixelColor);
+						}
+						else
+						{
+							finalColor = PixelShading(pixelVertex, shadingMode, isNormalMap);
+						}
+					}
+				
 					finalColor.MaxToOne();
 
 					pBackBufferPixels[pixelIndex] = SDL_MapRGB(pBackBuffer->format,
@@ -348,7 +367,7 @@ void Mesh3D::VertexTransformationFunction(const Camera& camera, const Matrix& ro
 	}
 }
 
-ColorRGB Mesh3D::PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNormalMap) const
+ColorRGB Mesh3D::PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNormalMap, ColorRGB existingPixelColor) const
 {
 	ColorRGB finalColor;
 
@@ -357,27 +376,65 @@ ColorRGB Mesh3D::PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNor
 	constexpr float shininess = 25.f;
 	constexpr ColorRGB ambient = { .03f,.03f,.03f };
 
+	
 	if (isNormalMap)
 	{
 		Vector3 binormal = Vector3::Cross(v.normal, v.tangent);
 		//Matrix tangentSpaceAxis = Matrix{ v.tangent, binormal, v.normal, Vector3::Zero };
-
 		ColorRGB normalMapSample = m_pEffect->GetNormalTexture()->Sample(v.uv);
 		v.normal = (v.tangent * (2.f * normalMapSample.r - 1.f) + binormal * (2.f * normalMapSample.g - 1.f) + v.normal * (2.f * normalMapSample.b - 1.f)).Normalized();
-	}
+	}  
 
 	float cosOfAngle{ Vector3::Dot(v.normal, -lightDirection) };
 
-	if (cosOfAngle < 0.f) return ColorRGB(0.f, 0.f, 0.f);
+	if (cosOfAngle < 0.f && !m_ToApplyTransparency) return ColorRGB(0.f, 0.f, 0.f);
 
 	ColorRGB observedArea = { cosOfAngle, cosOfAngle, cosOfAngle };
 
-	ColorRGB diffuse = Lambert(m_pEffect->GetDiffuseTexture()->Sample(v.uv));
+	const Texture* diffuseTexturePtr = m_pEffect->GetDiffuseTexture();
+	ColorRGB diffuse;
+	if (diffuseTexturePtr != nullptr)
+	{
+		if (!m_ToApplyTransparency)
+		{
+			diffuse = Lambert(diffuseTexturePtr->Sample(v.uv));
+		}
+		else
+		{
+			ColorRGBA sampleWithAlpha = diffuseTexturePtr->SampleWithAlpha(v.uv);
+			ColorRGB currentColor = ColorRGBA::GetColorRGB(sampleWithAlpha);
+			float alphaValue = sampleWithAlpha.a;
+			diffuse = (currentColor * alphaValue) + (existingPixelColor * (1.0f - alphaValue));
+		}
+	}
+	else
+	{
+		diffuse = colors::Black;
+	}
 
-	ColorRGB gloss = m_pEffect->GetGlossinessTexture()->Sample(v.uv);
+	const Texture* glossTexturePtr = m_pEffect->GetGlossinessTexture();
+	ColorRGB gloss;
+	if (glossTexturePtr != nullptr)
+	{
+		gloss = glossTexturePtr->Sample(v.uv);
+	}
+	else
+	{
+		gloss = colors::Black;
+	}
+	
 	float exp = gloss.r * shininess;
 
-	ColorRGB specular = Phong(m_pEffect->GetSpecularTexture()->Sample(v.uv), exp, -lightDirection, v.viewDirection, v.normal);
+	const Texture* specularTexturePtr = m_pEffect->GetSpecularTexture();
+	ColorRGB specular;
+	if (specularTexturePtr != nullptr)
+	{
+		specular = Phong(specularTexturePtr->Sample(v.uv), exp, -lightDirection, v.viewDirection, v.normal);
+	}
+	else
+	{
+		specular = colors::Black;
+	}
 
 	switch (shadingMode)
 	{
@@ -394,7 +451,15 @@ ColorRGB Mesh3D::PixelShading(Vertex_Out& v, ShadingMode shadingMode, bool isNor
 		break;
 
 	case ShadingMode::Combined:
-		finalColor += ambient + specular + diffuse * observedArea * lightIntensity;
+		if (!m_ToApplyTransparency)
+		{
+			finalColor += ambient + specular + diffuse * observedArea * lightIntensity;
+		}
+		else
+		{
+			finalColor = diffuse;
+		}
+		
 		break;
 	}
 
