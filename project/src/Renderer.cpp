@@ -281,7 +281,6 @@ namespace dae {
 			m_CullingMode = CullingMode::Back;
 			break;
 		}
-		std::cout << "Culling Mode: " << static_cast<int>(m_CullingMode) << std::endl;
 
 		m_pVehicle->SetCullingMode(m_CullingMode, m_pDeviceContext);
 		m_pFire->SetCullingMode(CullingMode::No, m_pDeviceContext);

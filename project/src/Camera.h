@@ -80,12 +80,6 @@ namespace dae
 
 		void Update(const Timer* pTimer)
 		{
-			const float deltaTime = pTimer->GetElapsed();
-
-			// Camera Update Logic
-			Vector3 velocity{ 5.f, 5.f, 10.f };
-			constexpr float rotationVelocity{ 0.1f * PI / 180.0f };
-
 			// Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
@@ -93,24 +87,41 @@ namespace dae
 			int mouseX{}, mouseY{};
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
-			if (pKeyboardState[SDL_SCANCODE_W]) origin += forward * velocity.z * deltaTime;
-			if (pKeyboardState[SDL_SCANCODE_S]) origin -= forward * velocity.z * deltaTime;
-			if (pKeyboardState[SDL_SCANCODE_A]) origin -= right * velocity.x * deltaTime;
-			if (pKeyboardState[SDL_SCANCODE_D]) origin += right * velocity.x * deltaTime;
+			const float deltaTime = pTimer->GetElapsed();
 
+			Vector3 velocity{ 30.f, 10.f, 30.f };
+			constexpr float rotationVelocity{ 0.1f * PI / 180.0f };
+
+
+
+			// Camera Update Logic
 			bool leftButtonPressed = mouseState & SDL_BUTTON(SDL_BUTTON_LEFT);
 			bool rightButtonPressed = mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT);
-
-			if (leftButtonPressed)
+			if (leftButtonPressed && !rightButtonPressed)
 			{
 				origin += forward * float(mouseY) * velocity.z * 0.01f;
 				totalPitch += float(mouseX) * rotationVelocity;
 			}
-			if (rightButtonPressed)
+			else if (rightButtonPressed && !leftButtonPressed)
 			{
 				totalPitch += float(mouseX) * rotationVelocity;
-				totalYaw += float(mouseY) * rotationVelocity;
+				totalYaw -= float(mouseY) * rotationVelocity;
 			}
+			else if (leftButtonPressed && rightButtonPressed)
+			{
+				origin += up *float(mouseY)* velocity.z * 0.01f;
+			}
+
+			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
+			{
+				velocity.x *= 4;
+				velocity.z *= 4;
+			}
+
+			if (pKeyboardState[SDL_SCANCODE_W] || pKeyboardState[SDL_SCANCODE_UP])		origin += forward * velocity.z * deltaTime;
+			if (pKeyboardState[SDL_SCANCODE_S] || pKeyboardState[SDL_SCANCODE_DOWN])	origin -= forward * velocity.z * deltaTime;
+			if (pKeyboardState[SDL_SCANCODE_A] || pKeyboardState[SDL_SCANCODE_LEFT])	origin -= right * velocity.x * deltaTime;
+			if (pKeyboardState[SDL_SCANCODE_D] || pKeyboardState[SDL_SCANCODE_RIGHT])	origin += right * velocity.x * deltaTime;
 
 			Matrix finalRotation = finalRotation.CreateRotation(totalYaw, totalPitch, 0.f);
 			forward = finalRotation.TransformVector(Vector3::UnitZ);
