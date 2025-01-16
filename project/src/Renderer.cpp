@@ -36,11 +36,6 @@ namespace dae {
 			InitializeFire();
 
 			m_pCamera = std::make_unique<Camera>(Vector3{ 0.f, 0.f , -50.f }, 45.f, float(m_Width), float(m_Height));
-			std::cout << "DirectX is initialized and ready!\n";
-		}
-		else
-		{
-			std::cout << "DirectX initialization failed!\n";
 		}
 	}
 
@@ -144,19 +139,19 @@ namespace dae {
 		switch (m_CurrentShadingMode)
 		{
 		case ShadingMode::Combined:
-			std::cout << "Current shading mode: OBSERVED AREA" << std::endl;
+			std::cout << MAGENTA << "**(SOFTWARE) Shading Mode = OBSERVED_AREA" << RESET << std::endl;
 			m_CurrentShadingMode = ShadingMode::ObservedArea;
 			break;
 		case ShadingMode::ObservedArea:
-			std::cout << "Current shading mode: DIFFUSE" << std::endl;
+			std::cout << MAGENTA << "**(SOFTWARE) Shading Mode = DIFFUSE" << RESET << std::endl;
 			m_CurrentShadingMode = ShadingMode::Diffuse;
 			break;
 		case ShadingMode::Diffuse:
-			std::cout << "Current shading mode: SPECULAR" << std::endl;
+			std::cout << MAGENTA << "**(SOFTWARE) Shading Mode = SPECULAR" << RESET << std::endl;
 			m_CurrentShadingMode = ShadingMode::Specular;
 			break;
 		case ShadingMode::Specular:
-			std::cout << "Current shading mode: COMBINED" << std::endl;
+			std::cout << MAGENTA << "**(SOFTWARE) Shading Mode = COMBINED" << RESET << std::endl;
 			m_CurrentShadingMode = ShadingMode::Combined;
 			break;
 		}
@@ -178,14 +173,20 @@ namespace dae {
 		{
 		case FilteringTechnique::Point:
 			m_pVehicleEffect->SetLinearSampling();
+			std::cout << GREEN << "**(HARDWARE) Sampler Filter = LINEAR" << RESET << std::endl;
+
 			m_FilteringTechnique = FilteringTechnique::Linear;
 			break;
 		case FilteringTechnique::Linear:
 			m_pVehicleEffect->SetAnisotropicSampling();
+			std::cout << GREEN << "**(HARDWARE) Sampler Filter = ANISOTROPIC" << RESET << std::endl;
+
 			m_FilteringTechnique = FilteringTechnique::Anisotropic;
 			break;
 		case FilteringTechnique::Anisotropic:
 			m_pVehicleEffect->SetPointSampling();
+			std::cout << GREEN << "**(HARDWARE) Sampler Filter = POINT" << RESET << std::endl;
+
 			m_FilteringTechnique = FilteringTechnique::Point;
 			break;
 		}
@@ -196,9 +197,11 @@ namespace dae {
 		switch (m_RenderingBackendType)
 		{
 		case RenderingBackendType::Software:
+			std::cout << YELLOW << "**(SHARED)Rasterizer Mode = HARDWARE" << RESET << std::endl;
 			m_RenderingBackendType = RenderingBackendType::Hardware;
 			break;
 		case RenderingBackendType::Hardware:
+			std::cout << YELLOW << "**(SHARED)Rasterizer Mode = SOFTWARE" << RESET << std::endl;
 			m_RenderingBackendType = RenderingBackendType::Software;
 			break;
 		}
@@ -207,21 +210,58 @@ namespace dae {
 	void Renderer::ChangeIsRotating()
 	{
 		m_IsRotating = !m_IsRotating;
+
+		if (m_IsRotating)
+		{
+			std::cout << YELLOW << "**(SHARED)Vehicle Rotation ON" << RESET << std::endl;
+		}
+		else
+		{
+			std::cout << YELLOW << "**(SHARED)Vehicle Rotation OFF" << RESET << std::endl;
+		}
+		
 	}
 
 	void Renderer::ChangeToRenderFireMesh()
 	{
 		m_ToRenderFireMesh = !m_ToRenderFireMesh;
+
+		if (m_ToRenderFireMesh)
+		{
+			std::cout << YELLOW << "**(SHARED) FireFX ON" << RESET << std::endl;
+		}
+		else
+		{
+			std::cout << YELLOW << "**(SHARED) FireFX OFF" << RESET << std::endl;
+		}
 	}
 
 	void Renderer::ChangeIsNormalMap()
 	{
 		m_IsNormalMap = !m_IsNormalMap; 
+
+		if (m_IsNormalMap)
+		{
+			std::cout << MAGENTA << "**(SOFTWARE) NormalMap ON" << RESET << std::endl;
+		}
+		else
+		{
+			std::cout << MAGENTA << "**(SOFTWARE) NormalMap OFF" << RESET << std::endl;
+		}
 	}
 
 	void Renderer::ChangeIsClearColorUniform()
 	{
 		m_IsClearColorUniform = !m_IsClearColorUniform;
+
+		if (m_IsClearColorUniform)
+		{
+			std::cout << MAGENTA << "**(SHARED) Uniform ClearColor ON" << RESET << std::endl;
+		}
+		else
+		{
+			std::cout << MAGENTA << "**(SHARED) Uniform ClearColor OFF" << RESET << std::endl;
+		}
 	}
 
 	void Renderer::ChangeCullingMode()
@@ -229,12 +269,15 @@ namespace dae {
 		switch (m_CullingMode)
 		{
 		case CullingMode::Back:
+			std::cout << YELLOW << "**(SHARED) CullMode = FRONT" << RESET << std::endl;
 			m_CullingMode = CullingMode::Front;
 			break;
 		case CullingMode::Front:
+			std::cout << YELLOW << "**(SHARED) CullMode = NONE" << RESET << std::endl;
 			m_CullingMode = CullingMode::No;
 			break;
 		case CullingMode::No:
+			std::cout << YELLOW << "**(SHARED) CullMode = BACK" << RESET << std::endl;
 			m_CullingMode = CullingMode::Back;
 			break;
 		}

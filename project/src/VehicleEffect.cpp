@@ -171,7 +171,7 @@ void VehicleEffect::SetPointSampling()
 	HRESULT hr = m_EffectSamplerVariable->SetSampler(0, m_pSamplerPoint);
 	if (SUCCEEDED(hr))
 	{
-		printf("Sampler state set to Point.\n");
+		return;
 	}
 }
 
@@ -180,7 +180,7 @@ void VehicleEffect::SetLinearSampling()
 	HRESULT hr = m_EffectSamplerVariable->SetSampler(0, m_pSamplerLinear);
 	if (SUCCEEDED(hr))
 	{
-		printf("Sampler state set to Linear.\n");
+		return;
 	}
 }
 
@@ -189,7 +189,7 @@ void VehicleEffect::SetAnisotropicSampling()
 	HRESULT hr = m_EffectSamplerVariable->SetSampler(0, m_pSamplerAnisotropic);
 	if (SUCCEEDED(hr))
 	{
-		printf("Sampler state set to Anisotropic.\n");
+		return;
 	}
 }
 
