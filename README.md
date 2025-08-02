@@ -9,9 +9,11 @@ A dual-mode 3D rasterizer supporting both hardware-accelerated (DirectX 11) and
 The Dual Rasterizer Project offers a flexible 3D rendering framework that can switch between:
 
 * **Hardware Rendering**: Leveraging the DirectX 11 GPU pipeline for accelerated rendering.
+
 ![Hardware Rendering](hardware.png)  
 
 * **Software Rendering**: A custom CPU-based rasterizer illustrating the fundamentals of graphics pipelines.
+
 ![Software Rendering](software.png)  
 
 Switch between modes at runtime to compare performance and visual output, and explore various shading, texturing, and debugging visualizations.
